@@ -296,6 +296,10 @@ typedef struct pass_opt_t
   const char* bin_name;
   char* link_arch;
   char* linker;
+  char* link_ldcmd;
+#ifndef NDEBUG
+  const char* llvm_args;
+#endif
 
   char* triple;
   char* cpu;

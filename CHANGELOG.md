@@ -13,6 +13,82 @@ All notable changes to the Pony compiler and standard library will be documented
 ### Changed
 
 
+## [0.33.2] - 2020-02-03
+
+### Fixed
+
+- fix cli issue when providing --help=false. ([PR #3442](https://github.com/ponylang/ponyc/pull/3442))
+- Fix linker error when creating symlinks on Windows ([PR #3444](https://github.com/ponylang/ponyc/pull/3444))
+- Fix "not match" and "not if" causing a syntax error ([PR #3449](https://github.com/ponylang/ponyc/pull/3449))
+
+### Added
+
+- LLVM 9.0.x support ([PR #3320](https://github.com/ponylang/ponyc/pull/3320))
+
+### Changed
+
+- Better error message for check_receiver_cap ([PR #3450](https://github.com/ponylang/ponyc/pull/3450))
+- Improved error for undefined but used left side of declarations ([PR #3451](https://github.com/ponylang/ponyc/pull/3451))
+
+## [0.33.1] - 2019-12-13
+
+### Fixed
+
+- Fix building ponyc with clang on Ubuntu ([PR #3378](https://github.com/ponylang/ponyc/pull/3378))
+- Fix error using latest VS2019 to build ponyc ([PR #3369](https://github.com/ponylang/ponyc/pull/3369))
+
+### Changed
+
+- Update default LLVM 7.1.0 ([PR #3377](https://github.com/ponylang/ponyc/pull/3377))
+
+## [0.33.0] - 2019-11-01
+
+### Fixed
+
+- Building ponyc with GCC 8+ ([PR #3345](https://github.com/ponylang/ponyc/pull/3345))
+
+### Added
+
+- Allow programmatic override of the default runtime options ([PR #3342](https://github.com/ponylang/ponyc/pull/3342))
+
+### Changed
+
+- `--ponythreads` has been renamed to `--ponymaxthreads` ([PR #3334](https://github.com/ponylang/ponyc/pull/3334))
+- All `--pony*` options that accept a value, will be checked for minimal values ([PR #3303](https://github.com/ponylang/ponyc/pull/3317))
+- Default to statically linking LLVM into ponyc ([PR #3355](https://github.com/ponylang/ponyc/pull/3355))
+
+## [0.32.0] - 2019-09-29
+
+### Added
+
+- Allow fields to be `consume`d (sometimes) ([PR #3304](https://github.com/ponylang/ponyc/pull/3304))
+- `--ponynoscale` option ([PR #3303](https://github.com/ponylang/ponyc/pull/3303))
+- `--ponyhelp` option to compiled program ([PR #3312](https://github.com/ponylang/ponyc/pull/3312))
+
+### Changed
+
+- Rename MaybePointer to NullablePointer ([PR #3293](https://github.com/ponylang/ponyc/pull/3293))
+- `--ponyminthreads` option can't be larger than `--ponythreads` ([PR #3303](https://github.com/ponylang/ponyc/pull/3303))
+- `--ponythreads` option can't be larger than cores available ([PR #3303](https://github.com/ponylang/ponyc/pull/3303))
+
+## [0.31.0] - 2019-08-31
+
+### Fixed
+
+- Fix static linking issue by changing the link order ([PR #3259](https://github.com/ponylang/ponyc/pull/3259))
+
+### Added
+
+- Add `--link-ldcmd` command line argument for overriding the `ld` command used for linking ([PR #3259](https://github.com/ponylang/ponyc/pull/3259))
+- Make builds with `musl` on `glibc` systems possible ([PR #3263](https://github.com/ponylang/ponyc/pull/3263))
+- Add `proxy_via(destination_host, destination_service)` to `TCPConnectionNotify` to allow TCP handlers to change the hostname & service from a TCPConnectionNotify before connecting ([PR #3230](https://github.com/ponylang/ponyc/pull/3230))
+- Add `add` and `sub` to `collections/persistent/Map` ([PR #3275](https://github.com/ponylang/ponyc/pull/3275))
+
+### Changed
+
+- Remove unnecessary argument to `Map.sub` ([PR #3275](https://github.com/ponylang/ponyc/pull/3275))
+- No longer supply AppImage as a release format ([PR #3288](https://github.com/ponylang/ponyc/pull/3288))
+
 ## [0.30.0] - 2019-07-27
 
 ### Fixed

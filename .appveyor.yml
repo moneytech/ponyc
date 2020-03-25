@@ -9,7 +9,7 @@ branches:
 
 environment:
   matrix:
-  - llvm: 7.0.1
+  - llvm: 9.0.1
 
 configuration:
   - release
@@ -67,7 +67,7 @@ artifacts:
   - path: 'ponyc-*.zip'
 
 deploy:
-  # On branche `release`, deploy (and publish) artifacts
+  # On branch `release`, deploy (and publish) artifacts
   # to the ponyc-win projects on Bintray.
   - provider: BinTray
     username: pony-buildbot-2
@@ -78,7 +78,7 @@ deploy:
     package: ponyc
     on:
         branch: release
-        llvm: 7.0.1
+        llvm: 9.0.1
         configuration: release
     publish: true
 

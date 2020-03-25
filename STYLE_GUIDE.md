@@ -15,7 +15,7 @@ No trailing whitespace at the end of lines.
 
 ### Indentation
 
-Use 2 spaces for indentation, No hard tabs.
+Use 2 spaces for indentation, no hard tabs.
 
 ```pony
 actor Main
@@ -429,9 +429,9 @@ end
 
   // Not OK
   output
-    .>append(file_name)
-    .>append(":")
-    .>append(msg)
+  .> append(file_name)
+  .> append(":")
+  .> append(msg)
   ```
 
 - Function arguments mostly follow the same rules as arguments in method declarations. However, all arguments may be placed on the following line with an additional level of indentation if all arguments would fit on that line. Otherwise, arguments must be placed on individual lines. These rules also apply to FFI calls. A `where` keyword and the following arguments may all exist on their own line.
@@ -553,11 +553,11 @@ fun mod_checked
 - The *file name* should be directly derived from the *principal type name* using a consistent reproducible scheme of case conversion.
   - The *file name* should be the "snake case" version of the *principal type name*. That is, each word in the *principal type name* (as defined by transitions from lowercase to uppercase letters) should be separated with the underscore character (`_`) and lowercased to generate the *file name*. For example, a file that defines the `ContentsLog` type should be named `contents_log.pony`.
   - If the *principal type* is a private type (its name beginning with an underscore character), then the *file name* should also be prefixed with an underscore character to highlight the fact that it defines a private type. For example, a file that defines the `_ClientConnection` type should be named `_client_connection.pony`.
-  - If the *principal type* name contains an acronym (a sequence of uppercase letters with no lowercase letters between them), then the entire acronym should be considered as a single word when converting to snake case. Note that if there is another word following the acronym, its first letter will also be uppercase, but should not be considered part of the sequence of uppercase letters that form the acronym. For example, a file that defines the `SSLContext` type should be named `ssl_context.pony`.
+  - If the *principal type* name contains an initialism (a sequence of uppercase letters with no lowercase letters between them), then the entire initialism should be considered as a single word when converting to snake case. Note that if there is another word following the initialism, its first letter will also be uppercase, but should not be considered part of the sequence of uppercase letters that form the initialism. For example, a file that defines the `SSLContext` type should be named `ssl_context.pony`.
 
 ## Documentation
 
-Public functions and types must include a triple-quoted docstring unless it is self-explanatory to anyone with the most basic knowledge of the domain. Markdown is used for formatting.
+Public functions and types must include a triple-quoted docstring unless it is self-explanatory to anyone with the most basic knowledge of the domain. Markdown is used for formatting. The `"""` tokens are placed on their own lines, even when the entire docstring could fit on a single line with the `"""` tokens.
 
 ```pony
 primitive Format
@@ -578,3 +578,13 @@ primitive Format
   """
 ```
 
+## Comments
+
+Single line comments will have exactly one space between the `//` token and the beginning of the comment message. This single space may only be omitted if the comment only contains valid Pony code. Single line comments that continue a previous comment have the same spacing requirements. No such restrictions are placed on multiline comments between the `/*` and `*/` tokens.
+
+```pony
+// if `data` is 1 cacheline or less in size
+// copy it into the existing `_current` array
+// to coalesce multiple tiny arrays
+// into a single bigger array
+```

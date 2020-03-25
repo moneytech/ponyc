@@ -7,40 +7,20 @@ This document is aimed at members of the Pony team who might be cutting a releas
 In order to do a release, you absolutely must have:
 
 * Commit access to the `ponyc` repo
-* The latest release of the [changelog tool](https://github.com/ponylang/changelog-tool/releases) installed
 * Access to the ponylang twitter account
-* Accounts on reddit/hacker news/lobste.rs for posting release notes
 * An account on the [Pony Zulip](https://ponylang.zulipchat.com)
 
-While not strictly required, your life will be made much easier if you:
+While not strictly required, you probably be unable to deal with any errors that arise without:
 
-* Have a [bintray account](https://bintray.com/) and have been granted access `pony-language` organization by a "release admin".
-* Have read and write access to the ponylang [travis-ci](https://travis-ci.org) account
-* Have read and write access to the ponylang [appveyor](https://www.appveyor.com) account
-* Have read and write access to the ponylang [dockerhub organization](https://hub.docker.com/u/ponylang/dashboard/)
-
-## Prerequisites for specific releases
-
-Before getting started, you will need a number for the version that you will be releasing as well as an agreed upon "golden commit" that will form the basis of the release.  Any commit is eligible to be a "golden commit" so long as:
-
-* It passed all CI checks
-
-While not strictly necessary, it is recommended to ensure one of the following to confirm that packaging isn't broken:
-
-* Confirm that the last Travis CI daily cron triggered jobs ran successfully (https://travis-ci.org/ponylang/ponyc/builds)
-* Manually kick off a run via an "API request" using the "Trigger Build" functionality in the Travis Web UI and wait to confirm all the jobs run successfully (https://travis-ci.org/ponylang/ponyc/builds)
-
-Both of these go through the motions to build all the packages we normally create to confirm there aren't any issues. While this will not guarantee no errors in other parts of the "release" CI run, it does confirm that there will not be any packaging related errors.
-
-If these jobs are not passing, you should get the issues resolved prior to releasing as both DEB and RPM packaging work off of the tag in GitHub and any changes or fixes made after tagging will not be included and will require a new release to be tagged.
+* A [bintray account](https://bintray.com/) and have been granted access `pony-language` organization by a "release admin".
+* Read and write access to the ponylang [appveyor](https://www.appveyor.com) account
+* Read and write access to the ponylang [cloudsmith](https://cloudsmith.io/) account.
 
 ### Validate external services are functional
 
-We rely on both Travis CI and Appveyor as part of our release process. Both need to be up and functional in order to do a release. Check the status of each before starting a release. If either is reporting issues, push the release back a day or until whenever they both are reporting no problems.
+We rely on both CircleCI and Appveyor as part of our release process. Both need to be up and functional in order to do a release. Check the status of each before starting a release. If either is reporting issues, push the release back a day or until whenever they both are reporting no problems.
 
-* [Travis CI Status](https://www.traviscistatus.com)
 * [Appveyor Status](https://appveyor.statuspage.io)
-* [COPR Build System](https://status.fedoraproject.org/)
 * [Bintray Status](http://status.bintray.com)
 
 ### A GitHub issue exists for the release
@@ -49,20 +29,23 @@ All releases should have a corresponding issue in the [ponyc repo](https://githu
 
 ## Releasing
 
-Please note that the release script was written with the assumption that you are using a clone of the `ponylang/ponyc` repo. You have to be using a clone rather than a fork. Further, due to how git works, you need to make sure that both your `master` and `release` branches are up-to-date. It is advised to your do this but making a fresh clone of the ponyc repo from which you will release. For example:
+Please note that this document was written with the assumption that you are using a clone of the `ponyc` repo. You have to be using a clone rather than a fork. It is advised that you do this by making a fresh clone of the `ponyc` repo from which you will release.
 
 ```bash
 git clone git@github.com:ponylang/ponyc.git ponyc-release-clean
 cd ponyc-release-clean
 ```
 
-For the duration of this document, we will pretend the "golden commit" version is `8a8ee28` and the version is `0.3.1`. Any place you see those values, please substitute your own version.
+Before getting started, you will need a number for the version that you will be releasing as well as an agreed upon "golden commit" that will form the basis of the release.
 
-With that in mind, run the release script:
+The "golden commit" must be `HEAD` on the `master` branch of this repository. At this time, releasing from any other location is not supported.
 
-- bash release.bash 0.3.1 8a8ee28
+For the duration of this document, that we are releasing version is `0.3.1`. Any place you see those values, please substitute your own version.
 
-If the golden commit does not include the most recent CHANGELOG updates, you will have to answer `n` to the second prompt and merge the changes manually.
+```bash
+git tag release-0.3.1
+git push origin release-0.3.1
+```
 
 ### Update the GitHub issue
 
@@ -72,11 +55,11 @@ Leave a comment on the GitHub issue for this release to let everyone know you ar
 
 Go through all open PRs and check to see if they are updating the CHANGELOG. If they are, leave a note asking them to merge the latest CHANGELOG into their branch because of the recent versioning for release and to move their additions into the appropriate area of "unreleased".
 
-### Add CHANGELOG entries to GitHub releases
-
-By now GitHub should have a listing of this new release under [releases](https://github.com/ponylang/ponyc/releases). Click the `0.3.1` then do "Edit Release". Paste the CHANGELOG entries for this release into the box and update.
-
 ### Update Homebrew
+
+The [ponyc Homebrew formula](https://github.com/Homebrew/homebrew-core/blob/master/Formula/ponyc.rb) is updated via a GitHub action called: ["Bump Homebrew formula"](https://github.com/ponylang/ponyc/actions?query=workflow%3A%22Release%22).
+
+If for some reason the GitHub action fails, you can use the following instructions to manually update:
 
 Fork the [homebrew-core repo](https://github.com/Homebrew/homebrew-core) and then clone it locally. You are going to be editing "Formula/ponyc.rb". If you already have a local copy of homebrew-core, make sure you sync up with the main Homebrew repo otherwise you might change an older version of the formula and end up with merge conflicts.
 
@@ -110,83 +93,57 @@ At this point we are basically waiting on Travis, Appveyor and Homebrew. As each
 
 ### Work on the release notes
 
-We do a blog post announcing each release. The release notes blog post should include highlights of any particularly interesting changes that we want the community to be aware of. 
+We do a blog post announcing each release. The release notes blog post should include highlights of any particularly interesting changes that we want the community to be aware of.
 
 Additionally, any breaking changes that require end users to change their code should be discussed and examples of how to update their code should be included.
 
 [Examples of prior release posts](https://www.ponylang.io/categories/release) are available. If you haven't written release notes before, you should review prior examples to get a feel what should be included. ([example](https://github.com/ponylang/ponylang.github.io/pull/284/files))
 
-### Wait on Travis and Appveyor
+### Wait on Appveyor
 
-During the time since you push to the release branch, Travis CI and Appveyor have been busy building release artifacts. This can take up to a couple hours depending on how busy they are. Periodically check bintray to see if the releases are there yet.
+During the time since you push to the release branch, Appveyor has been busy building the Windows release artifact. This can take up to a couple hours depending on how busy Appveyor is. Periodically check Bintray to see if the release is up yet.
 
-* [Travis CI](https://travis-ci.org/ponylang/ponyc/builds) (confirm that the Travis jobs for the `release` branch ran successfully)
-* [AppImage](https://bintray.com/pony-language/ponyc-appimage/ponyc)
-* [Debian](https://bintray.com/pony-language/ponylang-debian/ponyc)
-
-The pattern for releases is similar as what we previously saw. In the case of Deb, the version looks something like:
-
-`0.3.1`
-
-It is recommended to check the files for the Deb version to ensure that every distribution we support has a file successfully uploaded.
-
-For AppImage, the versions look something like:
-
-`0.3.1`
-
-* [Appveyor](https://ci.appveyor.com/project/ponylang/ponyc/history) (confirm that Appveyor jobs ran successfully for at least the LLVM/Release job)
 * [Windows](https://bintray.com/pony-language/ponyc-win/ponyc)
 
-For windows, the versions look something like:
+The pattern for releases is similar as what we previously saw:
 
 `ponyc-release-0.3.1-1526.8a8ee28`
 
 where the `1526` is the AppVeyor build number and the `8a8ee28` is the abbreviated SHA for the commit we built from.
 
-### Wait on COPR
+### Wait on Cloudsmith releases
 
-The Travis CI build for the release branch kicks off packaging builds on Fedora COPR. These packaging builds can take some time but are usually quick. Periodically check to see if the releases are finished and published on this site:
+On each release, we upload ponyc binaries for musl and GNU libc builds to Cloudsmith. The releases are built on [CircleCI](https://circleci.com/gh/ponylang/ponyc).
 
-* [Fedora COPR](https://copr.fedorainfracloud.org/coprs/ponylang/ponylang/builds/)
+You can verify that the release artifacts were successfully built and uploaded by checking the [ponylang Cloudsmith releases repository](https://cloudsmith.io/~ponylang/repos/releases/packages/) and verifing that packages exist for both GNU libc and musl libc.
 
-The pattern for packaging release builds is similar as what we previously saw. The version looks something like:
+Package names will be:
 
-`0.3.1-1.fc27` (confirm `status` is `succeeded`)
+- ponyc-x86-64-unknown-linux-gnu.tar.gz
+- ponyc-x86-64-unknown-linux-musl.tar.gz
 
-### Wait on Homebrew
+and should have a version field listing that matches the current release e.g. `0.3.1`.
 
-Periodically check on your Homebrew PR. They have a CI process and everything should flow through smoothly. If it doesn't attempt to fix the problem. If you can't fix the problem, leave a comment on the GitHub issue for this release asking for assistance.
-
-Your PR will be closed once your change has been merged to master. Note, that your PR itself will not show as merged in GitHub- just closed. You can use the following command to verify that your change is on Homebrew master:
-
-```bash
-curl -sL https://raw.githubusercontent.com/Homebrew/homebrew-core/master/Formula/ponyc.rb | grep url
-```
-
-If the formulae has been successfully updated, you'll see the new download url in the output of the command. If it hasn't, you'll see the old url.
-
-Note that its often quite quick to get everything through Homebrew's CI and merge process, however its often quite slow as well. We've seen their Jenkins CI often fail with errors that are unrelated to PR in question. Don't wait too long on Homebrew. If it hasn't passed CI and been merged within a couple hours move ahead without it having passed. If Homebrew is being slow about merging, when you inform Zulip, and pony-user of the release, note that the Homebrew version isn't available yet and include a link to the Homebrew PR and the ponyc Github release issue so that people can follow along. When the Homebrew PR is eventually merged, update pony-user and Zulip.
+In general, you should expect it to take about 30 to 50 minutes to build each package once CircleCI starts running the task.
 
 ### Wait on Docker images to be built
 
-As part of every release, 6 Docker images are built:
+As part of every release, 4 Docker images are built:
 
 - Ubuntu images
-  - latest
   - release
   - 0.3.1
 - Alpine images
-  - alpine
   - release-alpine
   - 0.3.1-alpine
 
-Visit the ponylang dockerhub organization [build page](https://hub.docker.com/r/ponylang/ponyc/builds/) and verify that all 6 images were successfully built. From the time the release starts, it can take several hours for all images to be built. You can track the progress of builds on [build activity page](https://cloud.docker.com/u/ponylang/repository/docker/ponylang/ponyc/builds); scroll down to the bottom of the page to see completed, in-progress, and pending jobs.
+The images are built via GitHub action after Cloudsmith releases have been uploaded. Cloudsmith sends an event to GitHub that triggers Docker images builds in the ["Handle External Events" workflow](https://github.com/ponylang/ponyc/actions?query=workflow%3A%22Handle+external+events%22).You can track the progress of the builds (including failures) there. You can validate that all the images have been pushed by checking the [tag page](https://hub.docker.com/r/ponylang/ponyc/tags) of the [ponyc DockerHub repository](https://hub.docker.com/r/ponylang/ponyc/).
 
 ### Verify that the Pony Playground updated to the new version
 
-Once the dockerhub images have been updated, visit the [Pony Playground](https://playground.ponylang.io/) and verify that it has been updated to the correct version by compiling some code and checking the compiler version number in the output.
+Once the DockerHub images have been updated, visit the [Pony Playground](https://playground.ponylang.io/) and verify that it has been updated to the correct version by compiling some code and checking the compiler version number in the output.
 
-If it doesn't update automatically, it will need to be done manually. Ping @jemc, @seantallen, or @plietar.
+If it doesn't update automatically, it will need to be done manually. Ping @jemc, @seantallen, @mfelsche, @aturley, @kubali or @theodus.
 
 ### Merge the release blog post PR for the ponylang website
 
@@ -200,15 +157,14 @@ If this is an "emergency release" that is designed to get a high priority bug fi
 
 ### Add to "Last Week in Pony"
 
-Last Week in Pony is our weekly newsletter. Add information about the release, including a link to the release notes, to the [current Last Week in Pony](https://github.com/ponylang/ponylang.github.io/issues?q=is%3Aissue+is%3Aopen+label%3Alast-week-in-pony). ([example](https://github.com/ponylang/ponylang.github.io/issues/282#issuecomment-392230067))
+Last Week in Pony is our weekly newsletter. Add information about the release, including a link to the release notes, to the [current Last Week in Pony](https://github.com/ponylang/ponylang-website/issues?q=is%3Aissue+is%3Aopen+label%3Alast-week-in-pony). ([example](https://github.com/ponylang/ponylang.github.io/issues/282#issuecomment-392230067))
 
 ### Post release notes to Link aggregators
 
 All Pony releases should be posted to:
 
-- [/r/ponylang](https://www.reddit.com/r/ponylang/) ([example](https://www.reddit.com/r/ponylang/comments/8m85p9/0222_released/))
-- [Hacker News](https://news.ycombinator.com/) ([example](https://news.ycombinator.com/item?id=17150567))
 - [ponylang twitter](https://www.twitter.com/ponylang) ([example](https://twitter.com/ponylang/status/952626693042311169))
+
 
 ### Close the GitHub issue
 

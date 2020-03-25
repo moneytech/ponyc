@@ -1,0 +1,56 @@
+name: PR
+
+on: pull_request
+
+jobs:
+  shellcheck:
+    name: Shellcheck shell scripts
+    runs-on: ubuntu-latest
+    container:
+      image: ponylang/shared-docker-ci-shellcheck:20191008
+    steps:
+      - uses: actions/checkout@v1
+      - name: Shellcheck *.bash files
+        run: find . -name '*.bash' -exec shellcheck {} \;
+
+  validate-musl-docker-latest-image-builds:
+    name: Validate musl Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker build
+        run: "docker build --pull --file=.dockerfiles/latest/x86-64-unknown-linux-musl/Dockerfile ."
+
+  validate-gnu-docker-latest-image-builds:
+    name: Validate GNU Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker build
+        run: "docker build --pull --file=.dockerfiles/latest/x86-64-unknown-linux-gnu/Dockerfile ."
+
+  validate-musl-docker-release-image-builds:
+    name: Validate musl Docker release image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker build
+        run: "docker build --pull --file=.dockerfiles/release/x86-64-unknown-linux-musl/Dockerfile ."
+
+  validate-gnu-docker-release-image-builds:
+    name: Validate GNU Docker release image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker build
+        run: "docker build --pull --file=.dockerfiles/release/x86-64-unknown-linux-gnu/Dockerfile ."
+
+  verify-changelog:
+    name: Verify CHANGELOG is valid
+    runs-on: ubuntu-latest
+    container:
+      image: ponylang/changelog-tool:release
+    steps:
+      - uses: actions/checkout@v1
+      - name: Verify CHANGELOG
+        run: changelog-tool verify

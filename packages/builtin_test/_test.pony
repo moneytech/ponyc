@@ -83,7 +83,7 @@ actor Main is TestList
     test(_TestUnsignedPartialArithmetic)
     test(_TestNextPow2)
     test(_TestNumberConversionSaturation)
-    test(_TestMaybePointer)
+    test(_TestNullablePointer)
     test(_TestLambdaCapture)
     test(_TestValtrace)
 
@@ -725,11 +725,27 @@ class iso _TestStringSplit is UnitTest
     h.assert_eq[String](r(3)?, "")
     h.assert_eq[String](r(4)?, "4")
 
+    r = "1.2,.3,, 4".split(".,")
+    h.assert_eq[USize](r.size(), 6)
+    h.assert_eq[String](r(0)?, "1")
+    h.assert_eq[String](r(1)?, "2")
+    h.assert_eq[String](r(2)?, "")
+    h.assert_eq[String](r(3)?, "3")
+    h.assert_eq[String](r(4)?, "")
+    h.assert_eq[String](r(5)?, " 4")
+
     r = "1 2 3  4".split(where n = 3)
     h.assert_eq[USize](r.size(), 3)
     h.assert_eq[String](r(0)?, "1")
     h.assert_eq[String](r(1)?, "2")
     h.assert_eq[String](r(2)?, "3  4")
+
+    r = "1.2,.3,, 4".split(".,", 4)
+    h.assert_eq[USize](r.size(), 4)
+    h.assert_eq[String](r(0)?, "1")
+    h.assert_eq[String](r(1)?, "2")
+    h.assert_eq[String](r(2)?, "")
+    h.assert_eq[String](r(3)?, "3,, 4")
 
 class iso _TestStringSplitBy is UnitTest
   """
@@ -2672,14 +2688,14 @@ struct _TestStruct
   var i: U32 = 0
   new create() => None
 
-class iso _TestMaybePointer is UnitTest
+class iso _TestNullablePointer is UnitTest
   """
-  Test the MaybePointer type.
+  Test the NullablePointer type.
   """
-  fun name(): String => "builtin/MaybePointer"
+  fun name(): String => "builtin/NullablePointer"
 
   fun apply(h: TestHelper) ? =>
-    let a = MaybePointer[_TestStruct].none()
+    let a = NullablePointer[_TestStruct].none()
     h.assert_true(a.is_none())
 
     h.assert_error({() ? => let from_a = a()? })
@@ -2687,7 +2703,7 @@ class iso _TestMaybePointer is UnitTest
     let s = _TestStruct
     s.i = 7
 
-    let b = MaybePointer[_TestStruct](s)
+    let b = NullablePointer[_TestStruct](s)
     h.assert_false(b.is_none())
 
     let from_b = b()?

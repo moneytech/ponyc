@@ -44,6 +44,7 @@ enum
   OPT_STATS,
   OPT_LINK_ARCH,
   OPT_LINKER,
+  OPT_LINK_LDCMD,
   OPT_PLUGIN,
 
   OPT_VERBOSE,
@@ -59,6 +60,7 @@ enum
   OPT_EXTFUN,
   OPT_SIMPLEBUILTIN,
   OPT_LINT_LLVM,
+  OPT_LLVM_ARGS,
 
   OPT_BNF,
   OPT_ANTLR,
@@ -90,6 +92,7 @@ static opt_arg_t std_args[] =
   {"stats", '\0', OPT_ARG_NONE, OPT_STATS},
   {"link-arch", '\0', OPT_ARG_REQUIRED, OPT_LINK_ARCH},
   {"linker", '\0', OPT_ARG_REQUIRED, OPT_LINKER},
+  {"link-ldcmd", '\0', OPT_ARG_REQUIRED, OPT_LINK_LDCMD},
   {"plugin", '\0', OPT_ARG_REQUIRED, OPT_PLUGIN},
 
   {"verbose", 'V', OPT_ARG_REQUIRED, OPT_VERBOSE},
@@ -105,6 +108,9 @@ static opt_arg_t std_args[] =
   {"extfun", '\0', OPT_ARG_NONE, OPT_EXTFUN},
   {"simplebuiltin", '\0', OPT_ARG_NONE, OPT_SIMPLEBUILTIN},
   {"lint-llvm", '\0', OPT_ARG_NONE, OPT_LINT_LLVM},
+#ifndef NDEBUG
+  {"llvm-args", '\0', OPT_ARG_REQUIRED, OPT_LLVM_ARGS},
+#endif
 
   {"bnf", '\0', OPT_ARG_NONE, OPT_BNF},
   {"antlr", '\0', OPT_ARG_NONE, OPT_ANTLR},
@@ -159,9 +165,14 @@ static void usage(void)
     "    =name          Default is the host architecture.\n"
     "  --linker         Set the linker command to use.\n"
     "    =name          Default is the compiler used to compile ponyc.\n"
+    "  --link-ldcmd     Set the ld command to use.\n"
+    "    =name          Default is `gold` on linux and system default otherwise.\n"
     "  --plugin         Use the specified plugin(s).\n"
     "    =name\n"
     "  --define, -D     Set a compile time definition.\n"
+#ifndef NDEBUG
+    "  --llvm-args      Pass LLVM-specific arguments.\n"
+#endif
     ,
     "Debugging options:\n"
     "  --verbose, -V    Verbosity level.\n"
@@ -186,32 +197,7 @@ static void usage(void)
     "  --antlr          Print out the Pony grammar as an ANTLR file.\n"
     "  --lint-llvm      Run the LLVM linting pass on generated IR.\n"
     ,
-    "Runtime options for Pony programs (not for use with ponyc):\n"
-    "  --ponythreads    Use N scheduler threads. Defaults to the number of\n"
-    "                   cores (not hyperthreads) available.\n"
-    "  --ponyminthreads Minimum number of active scheduler threads allowed.\n"
-    "                   Defaults to 0, meaning that all scheduler threads are\n"
-    "                   allowed to be suspended when no work is available.\n"
-    "  --ponysuspendthreshold\n"
-    "                   Amount of idle time before a scheduler thread suspends\n"
-    "                   itself to minimize resource consumption (max 1000 ms,\n"
-    "                   min 1 ms).\n"
-    "                   Defaults to 1 ms.\n"
-    "  --ponycdinterval Run cycle detection every N ms (max 1000 ms, min 10 ms).\n"
-    "                   Defaults to 100 ms.\n"
-    "  --ponygcinitial  Defer garbage collection until an actor is using at\n"
-    "                   least 2^N bytes. Defaults to 2^14.\n"
-    "  --ponygcfactor   After GC, an actor will next be GC'd at a heap memory\n"
-    "                   usage N times its current value. This is a floating\n"
-    "                   point value. Defaults to 2.0.\n"
-    "  --ponynoyield    Do not yield the CPU when no work is available.\n"
-    "  --ponynoblock    Do not send block messages to the cycle detector.\n"
-    "  --ponypin        Pin scheduler threads to CPU cores. The ASIO thread\n"
-    "                   can also be pinned if `--ponypinasio` is set.\n"
-    "  --ponypinasio    Pin the ASIO thread to a CPU the way scheduler\n"
-    "                   threads are pinned to CPUs. Requires `--ponypin` to\n"
-    "                   be set to have any effect.\n"
-    "  --ponyversion    Print the version of the compiler and exit.\n"
+    PONYRT_HELP
     );
 }
 
@@ -265,6 +251,11 @@ static ponyc_opt_process_t special_opt_processing(pass_opt_t *opt)
   // Defined "scheduler_scaling_pthreads" so that SIGUSR2 is made available for
   // use by the signals package when not using signals for scheduler scaling
   define_build_flag("scheduler_scaling_pthreads");
+#endif
+
+#ifndef NDEBUG
+  // llvm-args might not be used, initialized with NULL pointer first
+  opt->llvm_args = NULL;
 #endif
 
   return CONTINUE;
@@ -341,6 +332,7 @@ ponyc_opt_process_t ponyc_opt_process(opt_state_t* s, pass_opt_t* opt,
       case OPT_STATS: opt->print_stats = true; break;
       case OPT_LINK_ARCH: opt->link_arch = s->arg_val; break;
       case OPT_LINKER: opt->linker = s->arg_val; break;
+      case OPT_LINK_LDCMD: opt->link_ldcmd = s->arg_val; break;
       case OPT_PLUGIN:
         if(!plugin_load(opt, s->arg_val))
         {
@@ -360,6 +352,9 @@ ponyc_opt_process_t ponyc_opt_process(opt_state_t* s, pass_opt_t* opt,
       case OPT_FILENAMES: opt->print_filenames = true; break;
       case OPT_CHECKTREE: opt->check_tree = true; break;
       case OPT_LINT_LLVM: opt->lint_llvm = true; break;
+#ifndef NDEBUG
+      case OPT_LLVM_ARGS: opt->llvm_args = s->arg_val; break;
+#endif
 
       case OPT_BNF: print_grammar(false, true); return EXIT_0;
       case OPT_ANTLR: print_grammar(true, true); return EXIT_0;
@@ -386,6 +381,10 @@ ponyc_opt_process_t ponyc_opt_process(opt_state_t* s, pass_opt_t* opt,
           exit_code = EXIT_255;
         }
         break;
+
+      case -2:
+        // ponyint_opt_next already took care of printing the error message
+        return EXIT_255;
 
       default:
         printf("BUG: unprocessed option id %d\n", id);

@@ -1742,9 +1742,9 @@ bool is_pointer(ast_t* type)
   return is_literal(type, "Pointer");
 }
 
-bool is_maybe(ast_t* type)
+bool is_nullable_pointer(ast_t* type)
 {
-  return is_literal(type, "MaybePointer");
+  return is_literal(type, "NullablePointer");
 }
 
 bool is_none(ast_t* type)
@@ -1755,6 +1755,11 @@ bool is_none(ast_t* type)
 bool is_env(ast_t* type)
 {
   return is_literal(type, "Env");
+}
+
+bool is_runtime_options(ast_t* type)
+{
+  return is_literal(type, "RuntimeOptions");
 }
 
 bool is_bool(ast_t* type)

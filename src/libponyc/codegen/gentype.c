@@ -156,7 +156,7 @@ static bool make_opaque_struct(compile_t* c, reach_type_t* t)
           c_t->mem_type = c->void_ptr;
           return true;
         }
-        else if(name == c->str_Maybe)
+        else if(name == c->str_NullablePointer)
         {
           c_t->use_type = c->void_ptr;
           c_t->mem_type = c->void_ptr;
@@ -223,7 +223,11 @@ static void make_debug_basic(compile_t* c, reach_type_t* t)
     encoding = DW_ATE_unsigned;
   }
 
-#if PONY_LLVM >= 700
+#if PONY_LLVM >= 800
+  (void)align;
+  c_t->di_type = LLVMDIBuilderCreateBasicType(c->di, t->name, strlen(t->name),
+    8 * size, encoding, LLVMDIFlagZero);
+#elif PONY_LLVM >= 700
   (void)align;
   c_t->di_type = LLVMDIBuilderCreateBasicType(c->di, t->name, strlen(t->name),
     8 * size, encoding);
@@ -426,7 +430,7 @@ static bool make_struct(compile_t* c, reach_type_t* t)
 
     case TK_STRUCT:
     {
-      // Pointer and Maybe will have no structure.
+      // Pointer and NullablePointer will have no structure.
       if(c_t->structure == NULL)
         return true;
 
@@ -678,8 +682,8 @@ static void make_intrinsic_methods(compile_t* c, reach_type_t* t)
   {
     if(name == c->str_Pointer)
       genprim_pointer_methods(c, t);
-    else if(name == c->str_Maybe)
-      genprim_maybe_methods(c, t);
+    else if(name == c->str_NullablePointer)
+      genprim_nullable_pointer_methods(c, t);
     else if(name == c->str_DoNotOptimise)
       genprim_donotoptimise_methods(c, t);
     else if(name == c->str_Platform)
